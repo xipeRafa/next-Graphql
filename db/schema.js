@@ -25,12 +25,13 @@ const typeDefs = gql`
       }
 
      type Query{
-           getUser(token:String!):User
+           getUser(token:String!): User
      }
+
      type Mutation{
            newUser(input:userInput): User
            autenticationUser(input:inputAutentication):Token
      }
-`
 
+`
 module.exports = typeDefs
