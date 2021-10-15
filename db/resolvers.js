@@ -12,7 +12,10 @@ const crearToken=(user, secretekey, expiresIn)=>{
 
 const resolvers = {
       Query:{ 
-            getCourse:()=>"algo"
+            getUser:async(_, {token})=>{
+                  const userId = await jwt.verify(token, process.env.SECRETEKEY)
+                  return userId
+            }
       },
       Mutation:{
             newUser:async(_,{input},ctx,info)=>{
