@@ -69,6 +69,22 @@ const resolvers = {
                         console.log(error)
                         console.log('ERROR EN PRODUCT')
                   }
+            },
+            editProduct: async(_, {id, input})=>{
+                  //revisar si el producto existe o no
+                  let product = await Product.findById(id)
+
+                  if(!product){
+                        throw new Error('Producto No enconrtrado')  
+                  }
+                  //guardar en base de datos
+                  product = await Product.findOneAndUpdate(
+                        { _id:id }, 
+                        input, 
+                        {new:true}
+                  ) 
+
+                  return product
             }
       }
 }
