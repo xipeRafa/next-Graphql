@@ -14,6 +14,14 @@ const resolvers = {
             getUser: async(_, {token})=>{
                   const userId = await jwt.verify(token, process.env.SECRETEKEY)
                   return userId
+            },
+            getProducts:async()=>{
+                  try {
+                      const products = await Product.find({})  
+                      return products
+                  } catch (error) {
+                      console.log(error)  
+                  }
             }
       },
       Mutation:{
