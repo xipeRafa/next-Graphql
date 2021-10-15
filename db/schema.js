@@ -13,6 +13,14 @@ const typeDefs = gql`
       type Token{
             token:String
       }
+      type Product{
+            id:ID
+            name:String
+            stock:Int
+            price:Float
+            start:String
+      }
+
       input userInput{
             name:String!
             lastName:String!
@@ -23,14 +31,23 @@ const typeDefs = gql`
             email:String!
             password:String!
       }
+      input ProductInput{
+            name:String!
+            stock:Int!
+            price:Float!
+      } 
 
      type Query{
            getUser(token:String!): User
      }
 
      type Mutation{
+           # Users
            newUser(input:userInput): User
            autenticationUser(input:inputAutentication):Token
+
+           # Products
+           newProduct(input:ProductInput): Product
      }
 
 `

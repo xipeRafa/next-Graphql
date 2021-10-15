@@ -1,4 +1,5 @@
 const User = require('../models/User')
+const Product = require('../models/Product')
 const bcryptjs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 require('dotenv').config({path:'.env'})
@@ -41,6 +42,16 @@ const resolvers = {
                   if(!rightPassword){ throw new Error('El passwors es incorrecto') }  // revisar password 
 
                   return { token: crearToken(isUserA, process.env.SECRETEKEY, '24hrs' ) }    //crear el token
+            },
+            newProduct: async(_,{input})=>{
+                  try {
+                       const product = new Product(input) 
+                       const result = await product.save()
+                       return result
+                  } catch (error) {
+                        console.log(error)
+                        console.log('ERROR EN PRODUCT')
+                  }
             }
       }
 }
