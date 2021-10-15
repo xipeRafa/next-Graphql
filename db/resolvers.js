@@ -5,7 +5,10 @@ const resolvers = {
             getCourse:()=>"algo"
       },
       Mutation:{
-            newUser:()=>"newUser created"
+            newUser:(_,{input},ctx,info)=>{
+                  console.log(input)
+                  return 'creando....'
+            }
       }
 }
 
