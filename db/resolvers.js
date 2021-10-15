@@ -1,5 +1,6 @@
 
 const User = require('../models/User')
+const bcryptjs = require('bcryptjs')
 
 const resolvers = {
       Query:{ 
@@ -16,9 +17,9 @@ const resolvers = {
                         throw new Error('El usuario ya existye')
                   }
 
-
                   //password
-
+                  const salt = await bcryptjs.genSalt(10) 
+                  input.password = await bcryptjs.hash(password, salt)
                   //guardarlo en DB
                   try {
                         const user = new User(input)
