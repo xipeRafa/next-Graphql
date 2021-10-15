@@ -21,7 +21,7 @@ const typeDefs = gql`
            getCourse:String
      }
      type Mutation{
-           newUser(input:userInput): String
+           newUser(input:userInput): User
      }
 `
 
