@@ -4,14 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start":"node .",
-    "dev":"nodemon ."
+    "start": "node .",
+    "dev": "nodemon ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "apollo-server": "^3.4.0"
+    "apollo-server": "^3.4.0",
+    "dotenv": "^10.0.0",
+    "mongoose": "^6.0.11"
   },
   "devDependencies": {
     "nodemon": "^2.0.13"

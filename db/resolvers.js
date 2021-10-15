@@ -2,7 +2,7 @@
 
 const resolvers = {
       Query:{ 
-
+            getCourse:()=>"algo"
       }
 }
 
