@@ -40,7 +40,16 @@ const resolvers = {
                   } catch (error) {
                       console.log(error);
                   }
-              }, 
+            },
+            getCustomersBySeller: async (_, {}, ctx ) => {
+                  try {
+                      const customer = await Customer.find({ seller: ctx.user.id.toString() });
+                      return customer;
+                  } catch (error) {
+                      console.log(error);
+                  }     //1.- autenticar usuario to get new JWT.  2.- + query getCustomerSeller { ... }
+                        //3.- HEADERS authorization-jwt
+            }, 
       },
       Mutation:{
             newUser: async(_,{input},ctx,info)=>{
