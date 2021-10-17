@@ -49,7 +49,21 @@ const resolvers = {
                       console.log(error);
                   }     //1.- autenticar usuario to get new JWT.  2.- + query getCustomerSeller { ... }
                         //3.- HEADERS authorization-jwt
-            }, 
+            },
+            getCustomer: async (_, { id }, ctx) => {
+                  // Revisar si el cliente existe o no
+                  const customer = await Customer.findById(id);
+                  if(!customer) {
+                      throw new Error('Cliente no encontrado');
+                  }
+      
+                  // Quien lo creo puede verlo
+                  if(customer.seller.toString() !== ctx.user.id ) {
+                      throw new Error('No tienes las credenciales');
+                  }
+      
+                  return customer;
+            }
       },
       Mutation:{
             newUser: async(_,{input},ctx,info)=>{
