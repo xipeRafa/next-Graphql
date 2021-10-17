@@ -1,6 +1,7 @@
 const User = require('../models/User')
 const Product = require('../models/Product')
 const Customer = require('../models/Customer')
+const Order = require('../models/Order')
 const bcryptjs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 require('dotenv').config({path:'.env'})
@@ -13,6 +14,7 @@ const crearToken=(user, secretekey, expiresIn)=>{
 const resolvers = {
       Query:{ 
             getUser: async(_, {token})=>{
+                  
                   const userId = await jwt.verify(token, process.env.SECRETEKEY)
                   return userId
             },
@@ -25,12 +27,10 @@ const resolvers = {
                   }
             },
             getProduct: async(_, {id})=>{
-                  //revisar si el producto existe o no
-                  const product = await Product.findById(id)
+                  
+                  const product = await Product.findById(id) //revisar si el producto existe o no
+                  if(!product){ throw new Error('Producto No enconrtrado') }
 
-                  if(!product){
-                        throw new Error('Producto No enconrtrado')  
-                  }
                   return product
             },
             getCustomers: async () => {
@@ -51,18 +51,49 @@ const resolvers = {
                         //3.- HEADERS authorization-jwt
             },
             getCustomer: async (_, { id }, ctx) => {
-                  // Revisar si el cliente existe o no
-                  const customer = await Customer.findById(id);
-                  if(!customer) {
-                      throw new Error('Cliente no encontrado');
-                  }
+                  
+                  const customer = await Customer.findById(id); // Revisar si el cliente existe o no
+                  if(!customer) { throw new Error('Cliente no encontrado') }
       
-                  // Quien lo creo puede verlo
-                  if(customer.seller.toString() !== ctx.user.id ) {
+                  if(customer.seller.toString() !== ctx.user.id ) { // Quien lo creo puede verlo
                       throw new Error('No tienes las credenciales');
                   }
       
                   return customer;
+            },
+            getOrders: async () => {
+                  try {
+                      const orders = await Order.find({});
+                      return orders;
+                  } catch (error) {
+                      console.log(error);
+                  }
+            },
+            getOrdersBySeller: async (_, {}, ctx) => {
+                  try {
+                        const orders = await Order.find({ seller: ctx.user.id })
+                        // console.log(orders);
+                        return orders;
+                  } catch (error) {
+                        console.log(error);
+                  }
+            },
+            getOrderById: async(_, {id}, ctx) => {
+                 
+                  const order = await Order.findById(id);  // Si el pedido existe o no
+                  if(!order) {
+                      throw new Error('Pedido no encontrado');
+                  }
+                  
+                  if(order.seller.toString() !== ctx.user.id) { // Solo quien lo creo puede verlo
+                      throw new Error('No tienes las credenciales');
+                  }
+      
+                  return order; 
+            },
+            getOrdersByState: async (_, { state }, ctx) => {
+                  const orders = await Order.find({ seller: ctx.user.id, state });
+                  return orders;
             }
       },
       Mutation:{
@@ -103,30 +134,18 @@ const resolvers = {
                   }
             },
             editProduct: async(_, {id, input})=>{
-                  //revisar si el producto existe o no
-                  let product = await Product.findById(id)
-
-                  if(!product){
-                        throw new Error('Producto No enconrtrado')  
-                  }
-                  //guardar en base de datos
-                  product = await Product.findOneAndUpdate(
-                        { _id:id }, 
-                        input, 
-                        {new:true}
-                  ) 
-
+                 
+                  let product = await Product.findById(id)  //revisar si el producto existe o no
+                  if(!product){ throw new Error('Producto No enconrtrado') }
+                 
+                  product = await Product.findOneAndUpdate({ _id:id }, input, {new:true}) //guardar en base de datos
                   return product
             },
             deleteProduct: async(_,{id})=>{
-                  //revisar si el producto existe o no
-                  let product = await Product.findById(id)
-
-                  if(!product){
-                        throw new Error('Producto No enconrtrado')  
-                  }
                   
-                  //Eliminar
+                  let product = await Product.findById(id) //revisar si el producto existe o no
+                  if(!product){ throw new Error('Producto No enconrtrado') }
+                  
                   await Product.findOneAndDelete({_id:id})
                   return 'producto eliminado'
             },
@@ -153,38 +172,106 @@ const resolvers = {
                   }
             },
             edithCustomer: async (_, {id, input}, ctx) => {
-                  // Verificar si existe o no
-                  let customer = await Customer.findById(id);
-      
-                  if(!customer) {
-                      throw new Error('Ese customer no existe');
-                  }
+                 
+                  let customer = await Customer.findById(id);  // Verificar si existe o no
+                  if(!customer) { throw new Error('Ese customer no existe') }
       
                   // Verificar si el vendedor es quien edita
                   if(customer.seller.toString() !== ctx.user.id ) {
                       throw new Error('No tienes las credenciales');
                   }
       
-                  // guardar el customer
                   customer = await Customer.findOneAndUpdate({_id : id}, input, {new: true} );
                   return customer;
             },
             deleteCustomer : async (_, {id}, ctx) => {
-                  // Verificar si existe o no
+                 
                   let customer = await Customer.findById(id);
-                  if(!customer) {
-                      throw new Error('Ese customer no existe');
-                  }
+                  if(!customer) { throw new Error('Ese customer no existe') }  // Verificar si existe o no
       
-                  // Verificar si el vendedor es quien elimina
-                  if(customer.seller.toString() !== ctx.user.id ) {
+                  if(customer.seller.toString() !== ctx.user.id ) { // Verificar si el vendedor es quien elimina
                       throw new Error('No tienes las credenciales');
                   }
       
-                  // Eliminar Cliente
-                  await Customer.findOneAndDelete({_id : id});
+                  await Customer.findOneAndDelete({_id : id}); // Eliminar Cliente
                   return "Cliente Eliminado"
-              },
+            },
+            newOrder: async (_, {input}, ctx) => {
+
+                  const { customer } = input
+
+                  let customerIs = await Customer.findById(customer); // Verificar si existe o no
+                  if(!customerIs) { throw new Error('Ese customer no existe') }
+      
+                  if(customerIs.seller.toString() !== ctx.user.id ) {
+                        throw new Error('No tienes las credenciales');// Verificar si el customer es del vendedor
+                  }
+      
+                  for await ( const item of input.order ) { // Revisar que el stock este disponible
+                        const { id } = item;
+                        const product = await Product.findById(id);
+      
+                        if(item.quantity > product.stock) {
+                              throw new Error(`El item: ${product.name} excede la cantidad disponible`);
+                        } else {
+                              product.stock = product.stock - item.quantity; // Restar la cantidad a lo disponible
+                              await product.save();
+                        }
+                  }
+
+                  const newOrder = new Order(input); // Crear un nuevo pedido
+                  newOrder.seller = ctx.user.id; // asignarle un vendedor
+                  
+                  const result = await newOrder.save();// Guardarlo en la base de datos
+                  return result;
+            },
+            editOrder: async(_, {id, input}, ctx) => {
+
+                  const { customer } = input;
+      
+                  const orderIs = await Order.findById(id); // Si el pedido existe
+                  if(!orderIs) { throw new Error('El pedido no existe') }
+      
+                  const customerIs = await Customer.findById(customer); // Si el cliente existe
+                  if(!customerIs) { throw new Error('El Cliente no existe') }
+      
+                  if(customerIs.seller.toString() !== ctx.user.id ) { 
+                      throw new Error('No tienes las credenciales');
+                  }                              // Si el cliente y pedido pertenece al vendedor
+      
+                  if( input.order ) {       // Revisar el stock este disponible
+                      for await ( const item of input.order ) {
+
+                          const { id } = item;
+                          const product = await Product.findById(id);
+          
+                          if(item.quantity > product.stock) {
+                              throw new Error(`El item: ${product.name} excede la cantidad disponible`);
+                          } else {             
+                              product.stock = product.stock - item.quantity;  // Restar la cantidad a lo disponible
+                              await product.save();
+                          }
+
+                      } // que solo puedan modificar el estado
+                  }
+      
+                  const result = await Order.findOneAndUpdate({_id: id}, input, { new: true });
+                  return result;   // Guardar el pedido
+            },
+            deleteOrder: async (_, {id}, ctx) => {
+                  
+                  const order = await Order.findById(id); // Verificar si el order existe o no
+                  if(!order) { throw new Error('El order no existe') }
+      
+                  // verificar si el vendedor es quien lo borra
+                  if(order.seller.toString() !== ctx.user.id ) {
+                      throw new Error('No tienes las credenciales')
+                  }
+      
+                  await Order.findOneAndDelete({_id: id});
+                  return "Pedido Eliminado"
+            }
+
       }
 }
-module.exports=resolvers
+module.exports = resolvers

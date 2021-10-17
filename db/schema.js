@@ -29,14 +29,30 @@ const typeDefs = gql`
             phone:String
             seller:ID
       }
+      type Order {
+            id: ID
+            order: [OrderGroup]
+            total: Float
+            customer: ID
+            seller: ID
+            date: String
+            state: OrderState
+      }
 
-      input userInput{
+      type OrderGroup{
+            id: ID
+            quantity: Int
+            name: String
+            price: Float
+      }
+
+      input UserInput{
             name:String!
             lastName:String!
             email:String!
             password:String!
       }
-      input inputAutentication{
+      input InputAutentication{
             email:String!
             password:String!
       }
@@ -52,6 +68,25 @@ const typeDefs = gql`
             email:String!
             phone:String
       } 
+      input OrderProductInput {
+            id: ID
+            quantity: Int
+            name: String
+            price: Float
+      }
+
+      input OrderInput { 
+            order: [OrderProductInput]
+            total: Float
+            customer: ID
+            state: OrderState
+      } #schema
+
+      enum OrderState {
+            PENDING
+            COMPLETED
+            CANCELED
+      }
 
      type Query{
            #usuarios
@@ -65,12 +100,18 @@ const typeDefs = gql`
            getCustomers: [Customer]
            getCustomersBySeller: [Customer]
            getCustomer(id: ID!): Customer
+
+            # Orders
+            getOrders: [Order]
+            getOrdersBySeller: [Order] 
+            getOrderById(id: ID!): Order
+            getOrdersByState(state: String!): [Order]
      }
 
      type Mutation{
            # Users
-           newUser(input:userInput): User
-           autenticationUser(input:inputAutentication):Token
+           newUser(input:UserInput): User
+           autenticationUser(input:InputAutentication): Token
 
            # Products
            newProduct(input:ProductInput): Product
@@ -81,6 +122,11 @@ const typeDefs = gql`
            newCustomer(input:CustomerInput): Customer
            edithCustomer(id:ID!, input:CustomerInput): Customer
            deleteCustomer(id:ID!): String
+
+            # Orders
+            newOrder(input: OrderInput): Order
+            editOrder(id: ID!, input: OrderInput): Order
+            deleteOrder(id: ID!): String
 
      }
 
