@@ -96,17 +96,17 @@ const typeDefs = gql`
       }
 
      type Query{
-           #usuarios
-           getUser(token:String!): User
+            #usuarios
+            getUser(token:String!): User
 
-           #getProducts
-           getProducts: [Product]
-           getProduct(id:ID!):Product
-
-           # Customers
-           getCustomers: [Customer]
-           getCustomersBySeller: [Customer]
-           getCustomer(id: ID!): Customer
+            #getProducts
+            getProducts: [Product]
+            getProduct(id:ID!):Product
+ 
+            # Customers
+            getCustomers: [Customer]
+            getCustomersBySeller: [Customer]
+            getCustomer(id: ID!): Customer
 
             # Orders
             getOrders: [Order]
@@ -121,19 +121,19 @@ const typeDefs = gql`
      }
 
      type Mutation{
-           # Users
-           newUser(input:UserInput): User
-           autenticationUser(input:InputAutentication): Token
+            # Users
+            newUser(input:UserInput): User
+            autenticationUser(input:InputAutentication): Token
 
-           # Products
-           newProduct(input:ProductInput): Product
-           editProduct(id:ID!, input:ProductInput): Product
-           deleteProduct(id:ID!):String
+            # Products
+            newProduct(input:ProductInput): Product
+            editProduct(id:ID!, input:ProductInput): Product
+            deleteProduct(id:ID!):String
 
-           # Customers
-           newCustomer(input:CustomerInput): Customer
-           edithCustomer(id:ID!, input:CustomerInput): Customer
-           deleteCustomer(id:ID!): String
+            # Customers
+            newCustomer(input:CustomerInput): Customer
+            edithCustomer(id:ID!, input:CustomerInput): Customer
+            deleteCustomer(id:ID!): String
 
             # Orders
             newOrder(input: OrderInput): Order
