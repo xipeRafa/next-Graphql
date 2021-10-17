@@ -32,7 +32,15 @@ const resolvers = {
                         throw new Error('Producto No enconrtrado')  
                   }
                   return product
-            }
+            },
+            getCustomers: async () => {
+                  try {
+                      const customer = await Customer.find({});
+                      return customer;
+                  } catch (error) {
+                      console.log(error);
+                  }
+              }, 
       },
       Mutation:{
             newUser: async(_,{input},ctx,info)=>{
