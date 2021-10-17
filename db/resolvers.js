@@ -98,6 +98,28 @@ const resolvers = {
                   //Eliminar
                   await Product.findOneAndDelete({_id:id})
                   return 'producto eliminado'
+            },
+            newCustomer: async(_, {input}, ctx)=>{
+                
+                  const { email } = input  
+                  const customer = await Customer.findOne({ email });
+                  if(customer) {  //verificar si el cliente ya esta registrado\
+                      throw new Error('Ese cliente ya esta registrado');
+                  }
+
+                  //guardar en DB
+                  const newCustomer = new Customer(input);
+                  newCustomer.seller = ctx.user.id;  
+
+                 //asignar el vendedor
+                 /*  newCustomer.seller = "61690e1a2aeb8d611868840a";  */
+      
+                  try {
+                      const result = await newCustomer.save();
+                      return result;
+                  } catch (error) {
+                      console.log(error);
+                  }
             }
       }
 }
