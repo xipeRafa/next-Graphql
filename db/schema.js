@@ -38,12 +38,19 @@ const typeDefs = gql`
             date: String
             state: OrderState
       }
-
       type OrderGroup{
             id: ID
             quantity: Int
             name: String
             price: Float
+      }
+      type TopCustomer {
+            total: Float
+            customer: [Customer]
+      }
+      type TopSeller {
+            total: Float
+            seller: [User]
       }
 
       input UserInput{
@@ -106,6 +113,11 @@ const typeDefs = gql`
             getOrdersBySeller: [Order] 
             getOrderById(id: ID!): Order
             getOrdersByState(state: String!): [Order]
+
+            # Advanced Searches
+            bestCustomers: [TopCustomer]
+            bestSellers: [TopSeller]
+            searchProductByName(texto: String!) : [Product]
      }
 
      type Mutation{

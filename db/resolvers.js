@@ -82,7 +82,7 @@ const resolvers = {
                  
                   const order = await Order.findById(id);  // Si el pedido existe o no
                   if(!order) {
-                      throw new Error('Pedido no encontrado');
+                      throw new Error('Order no encontrado');
                   }
                   
                   if(order.seller.toString() !== ctx.user.id) { // Solo quien lo creo puede verlo
@@ -94,7 +94,48 @@ const resolvers = {
             getOrdersByState: async (_, { state }, ctx) => {
                   const orders = await Order.find({ seller: ctx.user.id, state });
                   return orders;
-            }
+            },
+            bestCustomers: async () => {
+                  const customers = await Order.aggregate([
+                      { $match : { state : "COMPLETED" } },
+                      { $group : { _id : "$customer", total: { $sum: '$total' } } }, 
+                      {
+                          $lookup: {
+                              from: 'customers', 
+                              localField: '_id',
+                              foreignField: "_id",
+                              as: "customer"
+                          }
+                      }, 
+                      { $limit: 10 }, 
+                      { $sort : { total : -1 } }
+                  ]);
+      
+                  return customers;
+              }, 
+              bestSellers: async () => {
+                  const sellers = await Order.aggregate([
+                      { $match : { state : "COMPLETED"} },
+                      { $group : { _id : "$seller", total: {$sum: '$total'} } },
+                      {
+                          $lookup: {
+                              from: 'users', 
+                              localField: '_id',
+                              foreignField: '_id',
+                              as: 'seller'
+                          }
+                      }, 
+                      { $limit: 3 }, 
+                      { $sort: { total : -1 } }
+                  ]);
+      
+                  return sellers;
+              },
+              searchProductByName: async(_, { texto }) => {
+                  const products = await Product.find({ $text: { $search: texto  } }).limit(10)
+      
+                  return products;
+              }
       },
       Mutation:{
             newUser: async(_,{input},ctx,info)=>{
@@ -269,7 +310,7 @@ const resolvers = {
                   }
       
                   await Order.findOneAndDelete({_id: id});
-                  return "Pedido Eliminado"
+                  return "Order Eliminado"
             }
 
       }
