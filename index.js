@@ -25,7 +25,8 @@ const server = new ApolloServer({
                         console.log(error);
                   }
             }  
-            
+            //1.- create new user 2.- autentication 3.- use the JWT in authorization HEADERS(newCustomewr) 
+            //4.- create new customer whit the last dates(name,lastname,enterprise,email,phone)  
       } 
 })
 
